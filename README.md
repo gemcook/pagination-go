@@ -76,7 +76,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
     cond := ParseFruitCondition(r.URL.RequestURI)
     fetcher := new(fruitFetcher)
 
-    totalCount, pagesCount, res, err := pager.GetPaging(fetcher, &pager.Setting{
+    totalCount, totalPages, res, err := pager.GetPaging(fetcher, &pager.Setting{
         Limit:      &pagination.Limit,
         ActivePage: &pagination.Page,
         Cond:       cond,
