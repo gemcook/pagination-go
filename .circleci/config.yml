@@ -9,32 +9,32 @@ jobs:
     steps:
       - run:
           name: show information
-          command:
+          command: |
             echo pwd \"$(pwd)\"
             echo go version \"$(go version)\"
             echo go env \"$(go env)\"
       - run: 
           name: add GOPATH/bin to PATH
-          command: 
+          command: |
             echo 'export PATH=${GOPATH}/bin/:${PATH}' >> $BASH_ENV
       - checkout
       - run: 
           name: install go tools
-          command:
+          command: |
             go get github.com/golang/lint/golint
             go get github.com/haya14busa/goverage
       - run: 
           name: lint 
-          command:
+          command: |
             golint ./...
             go vet ./...
       - run: 
           name: unit test 
-          command:
+          command: |
             go test -v -race ./...
       - run: 
           name: code coverage 
-          command:
+          command: |
             goverage -coverprofile=./coverage.text ./...
             # bash <(curl -s https://codecov.io/bash)
 
