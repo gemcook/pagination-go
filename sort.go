@@ -30,14 +30,14 @@ func ParseSort(queryStr string) []*Order {
 	query := u.Query()
 
 	if s := query.Get("sort"); s != "" {
-		return parseOrders(s)
+		return ParseOrders(s)
 	}
 	return []*Order{}
 }
 
-// parseOrders parses sort option string
+// ParseOrders parses sort option string
 // Sort option would be like '-col_first+col_second'.
-func parseOrders(sort string) []*Order {
+func ParseOrders(sort string) []*Order {
 	if sort == "" {
 		return []*Order{}
 	}
