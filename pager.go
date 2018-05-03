@@ -13,7 +13,7 @@ type Setting struct {
 	// active page number　(1〜)
 	ActivePage *int `json:"page"`
 	Cond       ConditionApplier
-	Order      Order
+	Orders     []*Order
 }
 
 // Pager の型
@@ -23,14 +23,14 @@ type Pager struct {
 	sidePagingCount int
 	totalCount      int
 	Condition       ConditionApplier
-	Order           Order
+	Orders          []*Order
 	fetcher         PagingFetcher
 }
 
 // PagingFetcher is the interface to fetch the desired range of record.
 type PagingFetcher interface {
 	Count(cond ConditionApplier) (int, error)
-	FetchPage(limit, offset int, cond ConditionApplier, order Order, result *PageFetchResult) error
+	FetchPage(limit, offset int, cond ConditionApplier, orders []*Order, result *PageFetchResult) error
 }
 
 // ConditionApplier applies its condition to fetcher.
@@ -88,7 +88,7 @@ func newPager(fetcher PagingFetcher, setting *Setting) (*Pager, error) {
 	pager.sidePagingCount = 2
 
 	pager.Condition = setting.Cond
-	pager.Order = setting.Order
+	pager.Orders = setting.Orders
 
 	return &pager, nil
 }
@@ -172,7 +172,7 @@ func (p *Pager) GetPages() (*PagingResponse, error) {
 	// active と sides に相当する範囲をまとめて取得する
 	limit, offset := p.GetActiveAndSidesLimit()
 	activeAndSides := make(PageFetchResult, 0, limit)
-	err = p.fetcher.FetchPage(limit, offset, p.Condition, p.Order, &activeAndSides)
+	err = p.fetcher.FetchPage(limit, offset, p.Condition, p.Orders, &activeAndSides)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (p *Pager) GetPages() (*PagingResponse, error) {
 	// 最初のページが範囲外の場合は取得する
 	first := make(PageFetchResult, 0, p.limit)
 	if p.StartPageIndex() > 0 {
-		err = p.fetcher.FetchPage(p.limit, 0, p.Condition, p.Order, &first)
+		err = p.fetcher.FetchPage(p.limit, 0, p.Condition, p.Orders, &first)
 		if err != nil {
 			return nil, err
 		}
@@ -189,7 +189,7 @@ func (p *Pager) GetPages() (*PagingResponse, error) {
 	// 最後のページが範囲外の場合は取得する
 	last := make(PageFetchResult, 0, p.limit)
 	if p.StartPageIndex()+(p.sidePagingCount*2) < p.LastPageIndex() {
-		err = p.fetcher.FetchPage(p.limit, p.LastPageIndex()*p.limit, p.Condition, p.Order, &last)
+		err = p.fetcher.FetchPage(p.limit, p.LastPageIndex()*p.limit, p.Condition, p.Orders, &last)
 		if err != nil {
 			return nil, err
 		}

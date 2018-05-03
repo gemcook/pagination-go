@@ -186,7 +186,7 @@ func (ff *fruitFetcher) Count(cond ConditionApplier) (int, error) {
 	return len(dummyFruits), nil
 }
 
-func (ff *fruitFetcher) FetchPage(limit, offset int, cond ConditionApplier, order Order, result *PageFetchResult) error {
+func (ff *fruitFetcher) FetchPage(limit, offset int, cond ConditionApplier, orders []*Order, result *PageFetchResult) error {
 	if cond != nil {
 		cond.ApplyCondition(ff)
 	}
