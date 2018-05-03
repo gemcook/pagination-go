@@ -31,12 +31,11 @@ jobs:
       - run: 
           name: unit test 
           command: |
-            go test -v -race ./...
+            go test -v -race -coverprofile=./go-code-cover ./...
       - run: 
           name: code coverage 
           command: |
             goverage -coverprofile=./coverage.text ./...
-            cat ./coverage.text
             # bash <(curl -s https://codecov.io/bash)
 
 workflows:
