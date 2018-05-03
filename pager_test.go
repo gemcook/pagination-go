@@ -173,8 +173,8 @@ type fruitFetcher struct {
 
 func newFruitFetcher() *fruitFetcher {
 	return &fruitFetcher{
-		priceLowerLimit:  -10 << 31,
-		priceHigherLimit: 10<<31 - 1,
+		priceLowerLimit:  -1 << 31,
+		priceHigherLimit: 1<<31 - 1,
 	}
 }
 
