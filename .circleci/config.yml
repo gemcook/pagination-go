@@ -22,7 +22,6 @@ jobs:
           name: install go tools
           command: |
             go get github.com/golang/lint/golint
-            go get github.com/haya14busa/goverage
       - run: 
           name: lint 
           command: |
@@ -31,12 +30,11 @@ jobs:
       - run: 
           name: unit test 
           command: |
-            go test -v -race -coverprofile=./go-code-cover ./...
+            go test -v -race -coverprofile=./coverage.text ./...
       - run: 
           name: code coverage 
           command: |
-            goverage -coverprofile=./coverage.text ./...
-            # bash <(curl -s https://codecov.io/bash)
+            bash <(curl -s https://codecov.io/bash)
 
 workflows:
   version: 2
