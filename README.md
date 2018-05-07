@@ -1,6 +1,6 @@
 # pager-go
 
-[![CircleCI](https://circleci.com/gh/gemcook/pager-go/tree/master.svg?style=shield)](https://circleci.com/gh/gemcook/pager-go/tree/master)
+[![CircleCI](https://circleci.com/gh/gemcook/pager-go/tree/master.svg?style=shield)](https://circleci.com/gh/gemcook/pager-go/tree/master) [![coverage](https://codecov.io/gh/gemcook/pager-go/branch/master/graph/badge.svg)](https://codecov.io/gh/gemcook/pager-go)
 
 This is a helper library which perfectly matches for server-side implementation of [@gemcook/table](https://github.com/gemcook/table)
 
