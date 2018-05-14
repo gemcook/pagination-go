@@ -22,6 +22,7 @@ jobs:
           name: install go tools
           command: |
             go get github.com/golang/lint/golint
+            go get github.com/mattn/goveralls
       - run: 
           name: lint 
           command: |
@@ -30,11 +31,11 @@ jobs:
       - run: 
           name: unit test 
           command: |
-            go test -v -race -coverprofile=./coverage.text ./...
+            go test -v -cover -race -coverprofile=./coverage.out ./...
       - run: 
           name: code coverage 
           command: |
-            bash <(curl -s https://codecov.io/bash)
+            goveralls -coverprofile=coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
 
 workflows:
   version: 2
