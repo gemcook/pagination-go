@@ -18,7 +18,16 @@ dep ensure -add github.com/gemcook/pagination-go
 
 ## Usage
 
-For the actual code. see [pager_test.go](./pager_test.go).
+See [example/server.go](./example/server.go).
+
+Run example.
+
+```sh
+cd example
+go run server.go
+```
+
+Then open `http://localhost:8080/fruits?limit=2&page=1&price_range=100,300&sort=+price`
 
 ### fetcher interface
 
