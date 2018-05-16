@@ -1,4 +1,4 @@
-package pager
+package pagination
 
 import (
 	"reflect"
@@ -229,9 +229,9 @@ var dummyFruits = []fruit{
 func refInt(n int) *int {
 	return &n
 }
-func TestGetPaging(t *testing.T) {
+func TestFetch(t *testing.T) {
 	type args struct {
-		fetcher PagingFetcher
+		fetcher PageFetcher
 		setting *Setting
 	}
 	tests := []struct {
@@ -334,16 +334,16 @@ func TestGetPaging(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotTotalCount, gotPageCount, gotRes, err := GetPaging(tt.args.fetcher, tt.args.setting)
+			gotTotalCount, gotPageCount, gotRes, err := Fetch(tt.args.fetcher, tt.args.setting)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetPaging() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Fetch() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if gotTotalCount != tt.wantTotalCount {
-				t.Errorf("GetPaging() gotTotalCount = %v, want %v", gotTotalCount, tt.wantTotalCount)
+				t.Errorf("Fetch() gotTotalCount = %v, want %v", gotTotalCount, tt.wantTotalCount)
 			}
 			if gotPageCount != tt.wantPageCount {
-				t.Errorf("GetPaging() gotPageCount = %v, want %v", gotPageCount, tt.wantPageCount)
+				t.Errorf("Fetch() gotPageCount = %v, want %v", gotPageCount, tt.wantPageCount)
 			}
 			if err != nil {
 				return
@@ -351,10 +351,10 @@ func TestGetPaging(t *testing.T) {
 			for key := range tt.wantRes.Pages {
 				gotVal, ok := gotRes.Pages[key]
 				if !ok {
-					t.Errorf("GetPaging() gotRes.Pages must have key = %v, but got %v", key, gotRes)
+					t.Errorf("Fetch() gotRes.Pages must have key = %v, but got %v", key, gotRes)
 				}
 				if !reflect.DeepEqual(tt.wantRes.Pages[key], gotVal) {
-					t.Errorf("GetPaging() gotRes.Pages[%v] = %v, want %v", key, gotVal, tt.wantRes.Pages[key])
+					t.Errorf("Fetch() gotRes.Pages[%v] = %v, want %v", key, gotVal, tt.wantRes.Pages[key])
 				}
 			}
 		})

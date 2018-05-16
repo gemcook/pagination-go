@@ -1,19 +1,19 @@
-package pager
+package pagination
 
 import (
 	"net/url"
 	"strconv"
 )
 
-// Pagination has limit and page
-type Pagination struct {
+// QueryString has limit and page
+type QueryString struct {
 	Limit int
 	Page  int
 }
 
-// ParsePagination parses URL QueryString to get limit and page
-func ParsePagination(queryStr string) *Pagination {
-	p := &Pagination{Limit: 30, Page: 1}
+// ParseQueryString parses URL QueryString to get limit and page
+func ParseQueryString(queryStr string) *QueryString {
+	p := &QueryString{Limit: 30, Page: 1}
 
 	u, err := url.Parse(queryStr)
 	if err != nil {
