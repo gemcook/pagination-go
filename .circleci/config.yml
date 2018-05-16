@@ -5,7 +5,7 @@ jobs:
       GOPATH: /home/circleci/go
     docker:
       - image: circleci/golang:1.10
-    working_directory: /home/circleci/go/src/github.com/gemcook/peger-go
+    working_directory: /home/circleci/go/src/github.com/gemcook/pagination-go
     steps:
       - run:
           name: show information

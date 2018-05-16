@@ -1,19 +1,19 @@
-# pager-go
+# pagination-go
 
-[![CircleCI](https://circleci.com/gh/gemcook/pager-go/tree/master.svg?style=shield)](https://circleci.com/gh/gemcook/pager-go/tree/master) [![Coverage Status](https://coveralls.io/repos/github/gemcook/pager-go/badge.svg?branch=master)](https://coveralls.io/github/gemcook/pager-go?branch=master)
+[![CircleCI](https://circleci.com/gh/gemcook/pagination-go/tree/master.svg?style=shield)](https://circleci.com/gh/gemcook/pagination-go/tree/master) [![Coverage Status](https://coveralls.io/repos/github/gemcook/pagination-go/badge.svg?branch=master)](https://coveralls.io/github/gemcook/pagination-go?branch=master)
 
-This is a helper library which perfectly matches for server-side implementation of [@gemcook/table](https://github.com/gemcook/table)
+This is a helper library which perfectly matches for server-side implementation of [@gemcook/pagination](https://github.com/gemcook/pagination)
 
 ## Installation
 
 ```sh
-go get -u github.com/gemcook/pager-go
+go get -u github.com/gemcook/pagination-go
 ```
 
 If you use `dep`
 
 ```sh
-dep ensure -add github.com/gemcook/pager-go
+dep ensure -add github.com/gemcook/pagination-go
 ```
 
 ## Usage
@@ -25,7 +25,7 @@ For the actual code. see [pager_test.go](./pager_test.go).
 First, your code to some resources must implement fetcher interface.
 
 ```go
-type PagingFetcher interface {
+type PageFetcher interface {
     Count(cond ConditionApplier) (int, error)
     FetchPage(limit, offset int, cond ConditionApplier, orders []*Order, result *PageFetchResult) error
 }
@@ -51,7 +51,7 @@ import (
     "encoding/json"
     "strconv"
 
-    "github.com/gemcook/pager-go"
+    "github.com/gemcook/pagination-go"
 )
 
 type fruitFetcher struct{}
@@ -69,14 +69,14 @@ func (fc *FruitCondition) ApplyCondition(s interface{}) {
     // apply condition to s
 }
 
-func Handler(w http.ResponseWriter, r *http.Request) {
+func handler(w http.ResponseWriter, r *http.Request) {
     // RequestURI: https://example.com/fruits?limit=10&page=1&price_range=100,300&sort=+price
-    pagination := pager.ParsePagination(r.URL.RequestURI)
-    orders := pager.ParseSort(r.URL.RequestURI)
+    pagination := pagination.ParsePagination(r.URL.RequestURI)
+    orders := pagination.ParseSort(r.URL.RequestURI)
     cond := ParseFruitCondition(r.URL.RequestURI)
     fetcher := new(fruitFetcher)
 
-    totalCount, totalPages, res, err := pager.GetPaging(fetcher, &pager.Setting{
+    totalCount, totalPages, res, err := pagination.Fetch(fetcher, &pagination.Setting{
         Limit:      &pagination.Limit,
         ActivePage: &pagination.Page,
         Cond:       cond,
@@ -95,7 +95,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Access-Control-Expose-Headers", "X-Total-Count,X-Total-Pages")
     w.Header().Set("Content-Type", "application/json; charset=utf-8")
     w.WriteHeader(200)
-    resJson, _ := json.Marshal(res)
-    w.Write(resJson)
+    resJSON, _ := json.Marshal(res)
+    w.Write(resJSON)
 }
 ```

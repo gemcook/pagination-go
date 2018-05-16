@@ -1,4 +1,4 @@
-package pager
+package pagination
 
 import (
 	"reflect"

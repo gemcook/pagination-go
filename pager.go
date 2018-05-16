@@ -1,4 +1,4 @@
-package pager
+package pagination
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-// Setting はページングの設定
+// Setting is pagination setting
 type Setting struct {
 	// data record count per single page
 	Limit *int `json:"limit"`
@@ -16,7 +16,7 @@ type Setting struct {
 	Orders     []*Order
 }
 
-// Pager の型
+// Pager has pagination parameters
 type Pager struct {
 	limit           int
 	page            int
@@ -24,11 +24,11 @@ type Pager struct {
 	totalCount      int
 	Condition       ConditionApplier
 	Orders          []*Order
-	fetcher         PagingFetcher
+	fetcher         PageFetcher
 }
 
-// PagingFetcher is the interface to fetch the desired range of record.
-type PagingFetcher interface {
+// PageFetcher is the interface to fetch the desired range of record.
+type PageFetcher interface {
 	Count(cond ConditionApplier) (int, error)
 	FetchPage(limit, offset int, cond ConditionApplier, orders []*Order, result *PageFetchResult) error
 }
@@ -54,8 +54,8 @@ func GetPageName(i int) string {
 	}
 }
 
-// GetPaging returns paging response using arbitrary record fetcher.
-func GetPaging(fetcher PagingFetcher, setting *Setting) (totalCount, pageCount int, res *PagingResponse, err error) {
+// Fetch returns paging response using arbitrary record fetcher.
+func Fetch(fetcher PageFetcher, setting *Setting) (totalCount, pageCount int, res *PagingResponse, err error) {
 	pager, err := newPager(fetcher, setting)
 	if err != nil {
 		return 0, 0, nil, err
@@ -68,7 +68,7 @@ func GetPaging(fetcher PagingFetcher, setting *Setting) (totalCount, pageCount i
 	return pager.totalCount, pager.GetPageCount(), res, nil
 }
 
-func newPager(fetcher PagingFetcher, setting *Setting) (*Pager, error) {
+func newPager(fetcher PageFetcher, setting *Setting) (*Pager, error) {
 	pager := Pager{}
 	pager.init()
 	pager.fetcher = fetcher
