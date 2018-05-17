@@ -50,19 +50,18 @@ func (fr *fruitsRepository) GetFruits(orders []*pagination.Order) []fruit {
 			result = append(result, f)
 		}
 	}
-	for i := len(result) - 1; i >= 0; i-- {
-		for _, o := range orders {
-			if o.ColumnName != "price" {
-				continue
-			}
-			sort.SliceStable(result, func(i, j int) bool {
-				if o.Direction == pagination.DirectionAsc {
-					return result[i].Price < result[j].Price
-				} else {
-					return result[i].Price > result[j].Price
-				}
-			})
+
+	for _, o := range orders {
+		if o.ColumnName != "price" {
+			continue
 		}
+		sort.SliceStable(result, func(i, j int) bool {
+			if o.Direction == pagination.DirectionAsc {
+				return result[i].Price < result[j].Price
+			} else {
+				return result[i].Price > result[j].Price
+			}
+		})
 	}
 
 	return result
@@ -159,8 +158,7 @@ func (ff *fruitFetcher) FetchPage(limit, offset int, cond pagination.ConditionAp
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	// RequestURI: https://example.com/fruits?limit=10&page=1&price_range=100,300&sort=+price
-	p := pagination.ParseQueryString(r.URL.RequestURI())
-	orders := pagination.ParseSort(r.URL.RequestURI())
+	p := pagination.ParseQuery(r.URL.RequestURI())
 	cond := parseFruitCondition(r.URL.RequestURI())
 	fetcher := newFruitFetcher()
 
@@ -168,7 +166,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		Limit:      &p.Limit,
 		ActivePage: &p.Page,
 		Cond:       cond,
-		Orders:     orders,
+		Orders:     p.Sort,
 	})
 
 	if err != nil {

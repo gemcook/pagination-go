@@ -5,15 +5,16 @@ import (
 	"strconv"
 )
 
-// QueryString has limit and page
-type QueryString struct {
+// Query has limit, page and sort
+type Query struct {
 	Limit int
 	Page  int
+	Sort  []*Order
 }
 
-// ParseQueryString parses URL QueryString to get limit and page
-func ParseQueryString(queryStr string) *QueryString {
-	p := &QueryString{Limit: 30, Page: 1}
+// ParseQuery parses URL query string to get limit, page and sort
+func ParseQuery(queryStr string) *Query {
+	p := &Query{Limit: 30, Page: 1}
 
 	u, err := url.Parse(queryStr)
 	if err != nil {
@@ -31,5 +32,7 @@ func ParseQueryString(queryStr string) *QueryString {
 			p.Page = page
 		}
 	}
+
+	p.Sort = ParseSort(queryStr)
 	return p
 }
