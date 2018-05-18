@@ -32,7 +32,7 @@ type PageFetcher interface {
 ### Limit and ActivePage
 
 Use `pagination.ParseQuery` to parse query string.
-Set limit and page on `Setting.Orders`.
+Set limit and page on `Setting.Limit` and `Setting.ActivePage`.
 
 ### fetching condition [OPTIONAL]
 
