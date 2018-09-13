@@ -21,23 +21,6 @@ type Order struct {
 	ColumnName string
 }
 
-// XormSorter has xorm sortability.
-type XormSorter interface {
-	Asc(columnNames ...string)
-	Desc(columnNames ...string)
-}
-
-// ApplyXormOrders appleis orders to sorter.
-func ApplyXormOrders(s XormSorter, orders []*Order) {
-	for _, order := range orders {
-		if order.Direction == DirectionAsc {
-			s.Asc(order.ColumnName)
-		} else if order.Direction == DirectionDesc {
-			s.Desc(order.ColumnName)
-		}
-	}
-}
-
 // ParseSort parses sort option in the given URL query string
 func ParseSort(queryStr string) []*Order {
 	u, err := url.Parse(queryStr)
