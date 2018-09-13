@@ -21,6 +21,23 @@ type Order struct {
 	ColumnName string
 }
 
+// Sorter has sortability.
+type Sorter interface {
+	Asc(columnName string)
+	Desc(columnName string)
+}
+
+// ApplyOrders appleis orders to sorter.
+func ApplyOrders(s Sorter, orders []*Order) {
+	for _, order := range orders {
+		if order.Direction == DirectionAsc {
+			s.Asc(order.ColumnName)
+		} else if order.Direction == DirectionDesc {
+			s.Desc(order.ColumnName)
+		}
+	}
+}
+
 // ParseSort parses sort option in the given URL query string
 func ParseSort(queryStr string) []*Order {
 	u, err := url.Parse(queryStr)
