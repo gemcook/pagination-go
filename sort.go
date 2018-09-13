@@ -21,14 +21,14 @@ type Order struct {
 	ColumnName string
 }
 
-// Sorter has sortability.
-type Sorter interface {
-	Asc(columnName string)
-	Desc(columnName string)
+// XormSorter has xorm sortability.
+type XormSorter interface {
+	Asc(columnNames ...string)
+	Desc(columnNames ...string)
 }
 
-// ApplyOrders appleis orders to sorter.
-func ApplyOrders(s Sorter, orders []*Order) {
+// ApplyXormOrders appleis orders to sorter.
+func ApplyXormOrders(s XormSorter, orders []*Order) {
 	for _, order := range orders {
 		if order.Direction == DirectionAsc {
 			s.Asc(order.ColumnName)
