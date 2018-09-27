@@ -5,16 +5,19 @@ import (
 	"strconv"
 )
 
-// Query has limit, page and sort
+// Query has pagination query parameters.
 type Query struct {
-	Limit int
-	Page  int
-	Sort  []*Order
+	Limit   int
+	Page    int
+	Sort    []*Order
+	Enabled bool
 }
 
 // ParseQuery parses URL query string to get limit, page and sort
 func ParseQuery(queryStr string) *Query {
-	p := &Query{Limit: 30, Page: 1}
+
+	// Set default values.
+	p := &Query{Limit: 30, Page: 1, Enabled: true}
 
 	u, err := url.Parse(queryStr)
 	if err != nil {
@@ -30,6 +33,12 @@ func ParseQuery(queryStr string) *Query {
 	if pageStr := query.Get("page"); pageStr != "" {
 		if page, err := strconv.Atoi(pageStr); err == nil {
 			p.Page = page
+		}
+	}
+
+	if pageStr := query.Get("pagination"); pageStr != "" {
+		if pageStr == "false" {
+			p.Enabled = false
 		}
 	}
 
