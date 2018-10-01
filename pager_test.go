@@ -331,6 +331,48 @@ func TestFetch(t *testing.T) {
 			},
 			false,
 		},
+		{"totalCount is even number", args{newFruitFetcher(), &Setting{
+			Limit:      refInt(5),
+			ActivePage: refInt(1),
+			Cond:       newFruitCondition(0, 360),
+		}}, 10, 2,
+			&PagingResponse{
+				Pages: Pages{
+					"active": PageFetchResult{
+						dummyFruits[0],
+						dummyFruits[1],
+						dummyFruits[2],
+						dummyFruits[3],
+						dummyFruits[4],
+					},
+					"first": PageFetchResult{
+						dummyFruits[0],
+						dummyFruits[1],
+						dummyFruits[2],
+						dummyFruits[3],
+						dummyFruits[4],
+					},
+					"last": PageFetchResult{
+						dummyFruits[5],
+						dummyFruits[7],
+						dummyFruits[8],
+						dummyFruits[9],
+						dummyFruits[10],
+					},
+					"before_distant": PageFetchResult{
+						dummyFruits[5],
+						dummyFruits[7],
+						dummyFruits[8],
+						dummyFruits[9],
+						dummyFruits[10],
+					},
+					"before_near":   nil,
+					"after_near":    nil,
+					"after_distant": nil,
+				},
+			},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
