@@ -45,3 +45,35 @@ func ParseQuery(queryStr string) *Query {
 	p.Sort = ParseSort(queryStr)
 	return p
 }
+
+// ParseMap parses URL parameters map to get limit, page and sort
+func ParseMap(qs map[string]string) *Query {
+
+	// Set default values.
+	p := &Query{Limit: 30, Page: 1, Enabled: true}
+
+	if limitStr, ok := qs["limit"]; ok {
+		if limit, err := strconv.Atoi(limitStr); err == nil {
+			p.Limit = limit
+		}
+	}
+	if pageStr, ok := qs["page"]; ok {
+		if page, err := strconv.Atoi(pageStr); err == nil {
+			p.Page = page
+		}
+	}
+
+	if pageStr, ok := qs["pagination"]; ok {
+		if pageStr == "false" {
+			p.Enabled = false
+		}
+	}
+
+	orders := []*Order{}
+
+	if sort, ok := qs["sort"]; ok {
+		orders = ParseOrders(sort)
+	}
+	p.Sort = orders
+	return p
+}
