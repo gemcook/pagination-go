@@ -29,22 +29,61 @@ type PageFetcher interface {
 }
 ```
 
-### Limit and ActivePage
+### parse Function
 
-Use `pagination.ParseQuery` to parse query string.
-Set limit and page on `Setting.Limit` and `Setting.ActivePage`.
+Package `pagination` provides `ParseQuery` and `ParseMap` functions that parses Query Parameters from request URL.
+Those query parameters below will be parsed.
+
+| query parameter | Mapped field | required | expected value | default value |
+| --- | --- | --- | --- | --- |
+| `limit` | `Limit` | no | positive integer | `30` |
+| `page` | `Page` | no | positive integer (1~) | `1` |
+| `pagination` | `Enabled` | no | boolean | `true` |
+
+#### Query String from URL
+
+```go
+// RequestURI: https://example.com/fruits?limit=10&page=1&price_range=100,300&sort=+price&pagination=true
+p := pagination.ParseQuery(r.URL.RequestURI())
+
+fmt.Println("limit =", p.Limit)
+fmt.Println("page =", p.Page)
+fmt.Println("pagination =", p.Enabled)
+```
+
+#### Query Parameters from AWS API Gateway - Lambda
+
+```go
+import "github.com/aws/aws-lambda-go/events"
+
+func Handler(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// event.QueryStringParameters
+	// map[string]string{"limit": "10", "page": "1", "pagination": "false"}
+
+	p := pagination.ParseMap(event.QueryStringParameters)
+	fmt.Println("limit =", p.Limit)
+	fmt.Println("page =", p.Page)
+	fmt.Println("pagination =", p.Enabled)
+}
+```
 
 ### fetching condition [OPTIONAL]
 
-Tell pager the condition to filter resources.
+Tell pagination the condition to filter resources.
 Then use `cond.ApplyCondition` in `Count` and `FetchPage` function.
 `ApplyCondition` takes a single parameter to pass your resource dependent object (something like O/R mapper).
 
 ### Orders [OPTIONAL]
 
-Optionally, pager takes orders.
-Use `pagination.ParseQuery` to parse sort parameter in query string.
+Optionally, pagination takes orders.
+Use `pagination.ParseQuery` or `pagination.ParseMap` to parse sort parameter in query string.
 Then, just pass `Query.Sort` to `Setting.Orders`.
+
+Those query parameters below will be parsed.
+
+| query parameter | Mapped field | required | expected value | default value |
+| --- | --- | --- | --- | --- |
+| `sort` | `Sort` | no | `+column_name` for ascending sort. </br> `-column_name` for descending sort. | `nil` |
 
 ## Example
 
