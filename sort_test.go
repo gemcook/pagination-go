@@ -1,8 +1,10 @@
-package pagination
+package pagination_test
 
 import (
 	"reflect"
 	"testing"
+
+	pagination "github.com/gemcook/pagination-go"
 )
 
 func TestParseSort(t *testing.T) {
@@ -12,20 +14,19 @@ func TestParseSort(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want []*Order
+		want []*pagination.Order
 	}{
-		// TODO: Add test cases.
-		{"no sort", args{""}, []*Order{}},
-		{"single col asc", args{"?sort=+col_a"}, []*Order{&Order{Direction: DirectionAsc, ColumnName: "col_a"}}},
-		{"single col desc", args{"?sort=-col_b"}, []*Order{&Order{Direction: DirectionDesc, ColumnName: "col_b"}}},
-		{"multi col", args{"?sort=+col_c-col_d"}, []*Order{
-			&Order{Direction: DirectionAsc, ColumnName: "col_c"},
-			&Order{Direction: DirectionDesc, ColumnName: "col_d"},
+		{"no sort", args{""}, []*pagination.Order{}},
+		{"single col asc", args{"?sort=+col_a"}, []*pagination.Order{&pagination.Order{Direction: pagination.DirectionAsc, ColumnName: "col_a"}}},
+		{"single col desc", args{"?sort=-col_b"}, []*pagination.Order{&pagination.Order{Direction: pagination.DirectionDesc, ColumnName: "col_b"}}},
+		{"multi col", args{"?sort=+col_c-col_d"}, []*pagination.Order{
+			&pagination.Order{Direction: pagination.DirectionAsc, ColumnName: "col_c"},
+			&pagination.Order{Direction: pagination.DirectionDesc, ColumnName: "col_d"},
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ParseSort(tt.args.queryStr); !reflect.DeepEqual(got, tt.want) {
+			if got := pagination.ParseSort(tt.args.queryStr); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ParseSort() = %v, want %v", got, tt.want)
 			}
 		})
