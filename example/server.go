@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gemcook/pagination-go"
+	pagination "github.com/gemcook/pagination-go"
 )
 
 type fruit struct {
@@ -58,9 +58,9 @@ func (fr *fruitsRepository) GetFruits(orders []*pagination.Order) []fruit {
 		sort.SliceStable(result, func(i, j int) bool {
 			if o.Direction == pagination.DirectionAsc {
 				return result[i].Price < result[j].Price
-			} else {
-				return result[i].Price > result[j].Price
 			}
+
+			return result[i].Price > result[j].Price
 		})
 	}
 
@@ -107,20 +107,6 @@ func parseFruitCondition(queryStr string) *fruitCondition {
 	return newFruitCondition(low, high)
 }
 
-func (fc *fruitCondition) ApplyCondition(s interface{}) {
-	fruits, ok := s.(*fruitsRepository)
-	if !ok {
-		return
-	}
-
-	if fc.PriceHigherLimit != nil {
-		fruits.priceHigherLimit = *fc.PriceHigherLimit
-	}
-	if fc.PriceLowerLimit != nil {
-		fruits.priceLowerLimit = *fc.PriceLowerLimit
-	}
-}
-
 type fruitFetcher struct {
 	repo *fruitsRepository
 }
@@ -131,26 +117,35 @@ func newFruitFetcher() *fruitFetcher {
 	}
 }
 
-func (ff *fruitFetcher) Count(cond pagination.ConditionApplier) (int, error) {
+func (ff *fruitFetcher) applyCondition(cond *fruitCondition) {
+	if cond.PriceHigherLimit != nil {
+		ff.repo.priceHigherLimit = *cond.PriceHigherLimit
+	}
+	if cond.PriceLowerLimit != nil {
+		ff.repo.priceLowerLimit = *cond.PriceLowerLimit
+	}
+}
+
+func (ff *fruitFetcher) Count(cond interface{}) (int, error) {
 	if cond != nil {
-		cond.ApplyCondition(ff.repo)
+		ff.applyCondition(cond.(*fruitCondition))
 	}
 	orders := make([]*pagination.Order, 0, 0)
 	fruits := ff.repo.GetFruits(orders)
 	return len(fruits), nil
 }
 
-func (ff *fruitFetcher) FetchPage(limit, offset int, cond pagination.ConditionApplier, orders []*pagination.Order, result *pagination.PageFetchResult) error {
+func (ff *fruitFetcher) FetchPage(cond interface{}, input *pagination.PageFetchInput, result *pagination.PageFetchResult) error {
 	if cond != nil {
-		cond.ApplyCondition(ff)
+		ff.applyCondition(cond.(*fruitCondition))
 	}
-	fruits := ff.repo.GetFruits(orders)
+	fruits := ff.repo.GetFruits(input.Orders)
 	var toIndex int
-	toIndex = offset + limit
+	toIndex = input.Offset + input.Limit
 	if toIndex > len(fruits) {
 		toIndex = len(fruits)
 	}
-	for _, fruit := range fruits[offset:toIndex] {
+	for _, fruit := range fruits[input.Offset:toIndex] {
 		*result = append(*result, fruit)
 	}
 	return nil
@@ -163,10 +158,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fetcher := newFruitFetcher()
 
 	totalCount, totalPages, res, err := pagination.Fetch(fetcher, &pagination.Setting{
-		Limit:      &p.Limit,
-		ActivePage: &p.Page,
-		Cond:       cond,
-		Orders:     p.Sort,
+		Limit:  p.Limit,
+		Page:   p.Page,
+		Cond:   cond,
+		Orders: p.Sort,
 	})
 
 	if err != nil {
