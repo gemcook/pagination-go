@@ -20,12 +20,18 @@ dep ensure -add github.com/gemcook/pagination-go
 
 ### fetcher interface
 
-First, your code to some resources must implement fetcher interface.
+Your fetching object must implement fetcher interface.
 
 ```go
 type PageFetcher interface {
-    Count(cond ConditionApplier) (int, error)
-    FetchPage(limit, offset int, cond ConditionApplier, orders []*Order, result *PageFetchResult) error
+	Count(cond interface{}) (int, error)
+	FetchPage(cond interface{}, input *PageFetchInput, result *PageFetchResult) error
+}
+
+type PageFetchInput struct {
+	Limit  int
+	Offset int
+	Orders []*Order
 }
 ```
 
@@ -34,11 +40,11 @@ type PageFetcher interface {
 Package `pagination` provides `ParseQuery` and `ParseMap` functions that parses Query Parameters from request URL.
 Those query parameters below will be parsed.
 
-| query parameter | Mapped field | required | expected value | default value |
-| --- | --- | --- | --- | --- |
-| `limit` | `Limit` | no | positive integer | `30` |
-| `page` | `Page` | no | positive integer (1~) | `1` |
-| `pagination` | `Enabled` | no | boolean | `true` |
+| query parameter | Mapped field | required | expected value        | default value |
+| --------------- | ------------ | -------- | --------------------- | ------------- |
+| `limit`         | `Limit`      | no       | positive integer      | `30`          |
+| `page`          | `Page`       | no       | positive integer (1~) | `1`           |
+| `pagination`    | `Enabled`    | no       | boolean               | `true`        |
 
 #### Query String from URL
 
@@ -70,8 +76,8 @@ func Handler(event events.APIGatewayProxyRequest) (events.APIGatewayProxyRespons
 ### fetching condition [OPTIONAL]
 
 Tell pagination the condition to filter resources.
-Then use `cond.ApplyCondition` in `Count` and `FetchPage` function.
-`ApplyCondition` takes a single parameter to pass your resource dependent object (something like O/R mapper).
+Then use `cond interface{}` in `Count` and `FetchPage` function.
+Use type assertion for `cond` to restore your fetching condition object.
 
 ### Orders [OPTIONAL]
 
@@ -81,9 +87,9 @@ Then, just pass `Query.Sort` to `Setting.Orders`.
 
 Those query parameters below will be parsed.
 
-| query parameter | Mapped field | required | expected value | default value |
-| --- | --- | --- | --- | --- |
-| `sort` | `Sort` | no | `+column_name` for ascending sort. </br> `-column_name` for descending sort. | `nil` |
+| query parameter | Mapped field | required | expected value                                                               | default value |
+| --------------- | ------------ | -------- | ---------------------------------------------------------------------------- | ------------- |
+| `sort`          | `Sort`       | no       | `+column_name` for ascending sort. </br> `-column_name` for descending sort. | `nil`         |
 
 ## Example
 
@@ -108,10 +114,6 @@ func ParseFruitCondition(uri string) *FruitCondition {
     // parse uri and initialize struct
 }
 
-func (fc *FruitCondition) ApplyCondition(s interface{}) {
-    // apply condition to s
-}
-
 func handler(w http.ResponseWriter, r *http.Request) {
 	// RequestURI: https://example.com/fruits?limit=10&page=1&price_range=100,300&sort=+price
 	p := pagination.ParseQuery(r.URL.RequestURI())
@@ -119,8 +121,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fetcher := newFruitFetcher()
 
 	totalCount, totalPages, res, err := pagination.Fetch(fetcher, &pagination.Setting{
-		Limit:      &p.Limit,
-		ActivePage: &p.Page,
+		Limit:      p.Limit,
+		Page:       p.Page,
 		Cond:       cond,
 		Orders:     p.Sort,
 	})

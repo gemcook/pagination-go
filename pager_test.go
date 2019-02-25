@@ -138,9 +138,6 @@ func TestPager_GetPageCount(t *testing.T) {
 	}
 }
 
-func refInt(n int) *int {
-	return &n
-}
 func TestFetch(t *testing.T) {
 	type args struct {
 		fetcher pagination.PageFetcher
@@ -155,13 +152,13 @@ func TestFetch(t *testing.T) {
 		wantErr        bool
 	}{
 		{"active is out of range", args{newFruitFetcher(), &pagination.Setting{
-			Limit:      refInt(2),
-			ActivePage: refInt(100),
+			Limit: 2,
+			Page:  100,
 		}}, 0, 0, nil, true},
 		{"no response", args{newFruitFetcher(), &pagination.Setting{
-			Limit:      refInt(2),
-			ActivePage: refInt(1),
-			Cond:       newFruitCondition(-1, -1),
+			Limit: 2,
+			Page:  1,
+			Cond:  newFruitCondition(-1, -1),
 		}}, 0, 0, &pagination.PagingResponse{
 			Pages: pagination.Pages{
 				"active":         pagination.PageFetchResult{},
@@ -174,8 +171,8 @@ func TestFetch(t *testing.T) {
 			},
 		}, false},
 		{"no condition", args{newFruitFetcher(), &pagination.Setting{
-			Limit:      refInt(2),
-			ActivePage: refInt(1),
+			Limit: 2,
+			Page:  1,
 		}}, 11, 6,
 			&pagination.PagingResponse{
 				Pages: pagination.Pages{
@@ -211,9 +208,9 @@ func TestFetch(t *testing.T) {
 			false,
 		},
 		{"price 100-300", args{newFruitFetcher(), &pagination.Setting{
-			Limit:      refInt(1),
-			ActivePage: refInt(4),
-			Cond:       newFruitCondition(100, 300),
+			Limit: 1,
+			Page:  4,
+			Cond:  newFruitCondition(100, 300),
 		}}, 7, 7,
 			&pagination.PagingResponse{
 				Pages: pagination.Pages{
@@ -243,9 +240,9 @@ func TestFetch(t *testing.T) {
 			false,
 		},
 		{"totalCount is even number", args{newFruitFetcher(), &pagination.Setting{
-			Limit:      refInt(5),
-			ActivePage: refInt(1),
-			Cond:       newFruitCondition(0, 360),
+			Limit: 5,
+			Page:  1,
+			Cond:  newFruitCondition(0, 360),
 		}}, 10, 2,
 			&pagination.PagingResponse{
 				Pages: pagination.Pages{
@@ -316,11 +313,11 @@ func TestFetch(t *testing.T) {
 
 func TestPager_GetPages_LargeData_Last(t *testing.T) {
 	type args struct {
-		Limit      int
-		ActivePage int
-		Condition  pagination.ConditionApplier
-		Orders     []*pagination.Order
-		Fetcher    pagination.PageFetcher
+		Limit     int
+		Page      int
+		Condition interface{}
+		Orders    []*pagination.Order
+		Fetcher   pagination.PageFetcher
 	}
 	tests := []struct {
 		name     string
@@ -330,7 +327,7 @@ func TestPager_GetPages_LargeData_Last(t *testing.T) {
 	}{
 		{"largeData",
 			args{
-				Limit: 10, ActivePage: 1, Condition: nil, Orders: []*pagination.Order{},
+				Limit: 10, Page: 1, Condition: nil, Orders: []*pagination.Order{},
 				Fetcher: newLargeDataFetcher(),
 			},
 			[]LargeData{LargeData{101}, LargeData{102}, LargeData{103}},
@@ -341,10 +338,10 @@ func TestPager_GetPages_LargeData_Last(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			fetcher := newLargeDataFetcher()
 			p, err := pagination.NewPager(fetcher, &pagination.Setting{
-				Limit:      &tt.args.Limit,
-				ActivePage: &tt.args.ActivePage,
-				Cond:       tt.args.Condition,
-				Orders:     tt.args.Orders,
+				Limit:  tt.args.Limit,
+				Page:   tt.args.Page,
+				Cond:   tt.args.Condition,
+				Orders: tt.args.Orders,
 			})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Pager.GetPages() error = %v, wantErr %v", err, tt.wantErr)

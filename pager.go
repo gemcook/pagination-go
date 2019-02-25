@@ -9,11 +9,11 @@ import (
 // Setting is pagination setting
 type Setting struct {
 	// data record count per single page
-	Limit *int `json:"limit"`
+	Limit int `json:"limit"`
 	// active page number　(1〜)
-	ActivePage *int `json:"page"`
-	Cond       ConditionApplier
-	Orders     []*Order
+	Page   int `json:"page"`
+	Cond   interface{}
+	Orders []*Order
 }
 
 // Pager has pagination parameters
@@ -22,20 +22,22 @@ type Pager struct {
 	page            int
 	sidePagingCount int
 	totalCount      int
-	Condition       ConditionApplier
+	Condition       interface{}
 	Orders          []*Order
 	fetcher         PageFetcher
 }
 
 // PageFetcher is the interface to fetch the desired range of record.
 type PageFetcher interface {
-	Count(cond ConditionApplier) (int, error)
-	FetchPage(limit, offset int, cond ConditionApplier, orders []*Order, result *PageFetchResult) error
+	Count(cond interface{}) (int, error)
+	FetchPage(cond interface{}, input *PageFetchInput, result *PageFetchResult) error
 }
 
-// ConditionApplier applies its condition to fetcher.
-type ConditionApplier interface {
-	ApplyCondition(f interface{})
+// PageFetchInput input for page fetcher
+type PageFetchInput struct {
+	Limit  int
+	Offset int
+	Orders []*Order
 }
 
 // GetPageName returns named page
@@ -73,15 +75,15 @@ func newPager(fetcher PageFetcher, setting *Setting) (*Pager, error) {
 	pager.init()
 	pager.fetcher = fetcher
 
-	if setting.Limit != nil && *setting.Limit != 0 {
-		pager.limit = *setting.Limit
+	if setting.Limit != 0 {
+		pager.limit = setting.Limit
 	}
 
-	if setting.ActivePage != nil && *setting.ActivePage != 0 {
-		if *setting.ActivePage < 1 {
+	if setting.Page != 0 {
+		if setting.Page < 1 {
 			return nil, fmt.Errorf("page must be >= 1")
 		}
-		pager.page = *setting.ActivePage
+		pager.page = setting.Page
 	}
 
 	// currently side pages count is fixed to 2
@@ -172,7 +174,12 @@ func (p *Pager) GetPages() (*PagingResponse, error) {
 	// active と sides に相当する範囲をまとめて取得する
 	limit, offset := p.GetActiveAndSidesLimit()
 	activeAndSides := make(PageFetchResult, 0, limit)
-	err = p.fetcher.FetchPage(limit, offset, p.Condition, p.Orders, &activeAndSides)
+	fetchActiveInput := &PageFetchInput{
+		Limit:  limit,
+		Offset: offset,
+		Orders: p.Orders,
+	}
+	err = p.fetcher.FetchPage(p.Condition, fetchActiveInput, &activeAndSides)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +187,12 @@ func (p *Pager) GetPages() (*PagingResponse, error) {
 	// 最初のページが範囲外の場合は取得する
 	first := make(PageFetchResult, 0, p.limit)
 	if p.StartPageIndex() > 0 {
-		err = p.fetcher.FetchPage(p.limit, 0, p.Condition, p.Orders, &first)
+		fetchFirstInput := &PageFetchInput{
+			Limit:  p.limit,
+			Offset: 0,
+			Orders: p.Orders,
+		}
+		err = p.fetcher.FetchPage(p.Condition, fetchFirstInput, &first)
 		if err != nil {
 			return nil, err
 		}
@@ -189,7 +201,13 @@ func (p *Pager) GetPages() (*PagingResponse, error) {
 	// 最後のページが範囲外の場合は取得する
 	last := make(PageFetchResult, 0, p.limit)
 	if p.StartPageIndex()+(p.sidePagingCount*2) < p.LastPageIndex() {
-		err = p.fetcher.FetchPage(p.limit, p.LastPageIndex()*p.limit, p.Condition, p.Orders, &last)
+
+		fetchLastInput := &PageFetchInput{
+			Limit:  p.limit,
+			Offset: p.LastPageIndex() * p.limit,
+			Orders: p.Orders,
+		}
+		err = p.fetcher.FetchPage(p.Condition, fetchLastInput, &last)
 		if err != nil {
 			return nil, err
 		}

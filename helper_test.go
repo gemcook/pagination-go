@@ -19,19 +19,6 @@ func newFruitCondition(low, high int) *fruitCondition {
 	}
 }
 
-func (fc *fruitCondition) ApplyCondition(s interface{}) {
-	fetcher, ok := s.(*fruitFetcher)
-	if !ok {
-		return
-	}
-	if fc.PriceHigherLimit != nil {
-		fetcher.priceHigherLimit = *fc.PriceHigherLimit
-	}
-	if fc.PriceLowerLimit != nil {
-		fetcher.priceLowerLimit = *fc.PriceLowerLimit
-	}
-}
-
 type fruitFetcher struct {
 	priceLowerLimit  int
 	priceHigherLimit int
@@ -44,25 +31,34 @@ func newFruitFetcher() *fruitFetcher {
 	}
 }
 
-func (ff *fruitFetcher) Count(cond pagination.ConditionApplier) (int, error) {
+func (ff *fruitFetcher) applyCondition(cond *fruitCondition) {
+	if cond.PriceHigherLimit != nil {
+		ff.priceHigherLimit = *cond.PriceHigherLimit
+	}
+	if cond.PriceLowerLimit != nil {
+		ff.priceLowerLimit = *cond.PriceLowerLimit
+	}
+}
+
+func (ff *fruitFetcher) Count(cond interface{}) (int, error) {
 	if cond != nil {
-		cond.ApplyCondition(ff)
+		ff.applyCondition(cond.(*fruitCondition))
 	}
 	dummyFruits := ff.GetDummy()
 	return len(dummyFruits), nil
 }
 
-func (ff *fruitFetcher) FetchPage(limit, offset int, cond pagination.ConditionApplier, orders []*pagination.Order, result *pagination.PageFetchResult) error {
+func (ff *fruitFetcher) FetchPage(cond interface{}, input *pagination.PageFetchInput, result *pagination.PageFetchResult) error {
 	if cond != nil {
-		cond.ApplyCondition(ff)
+		ff.applyCondition(cond.(*fruitCondition))
 	}
 	dummyFruits := ff.GetDummy()
 	var toIndex int
-	toIndex = offset + limit
+	toIndex = input.Offset + input.Limit
 	if toIndex > len(dummyFruits) {
 		toIndex = len(dummyFruits)
 	}
-	for _, fruit := range dummyFruits[offset:toIndex] {
+	for _, fruit := range dummyFruits[input.Offset:toIndex] {
 		*result = append(*result, fruit)
 	}
 	return nil
@@ -102,17 +98,17 @@ func newLargeDataFetcher() *LargeDataFetcher {
 	return &LargeDataFetcher{}
 }
 
-func (ff *LargeDataFetcher) Count(cond pagination.ConditionApplier) (int, error) {
+func (ff *LargeDataFetcher) Count(cond interface{}) (int, error) {
 	return len(dummyLargeList), nil
 }
 
-func (ff *LargeDataFetcher) FetchPage(limit, offset int, cond pagination.ConditionApplier, orders []*pagination.Order, result *pagination.PageFetchResult) error {
+func (ff *LargeDataFetcher) FetchPage(cond interface{}, input *pagination.PageFetchInput, result *pagination.PageFetchResult) error {
 	var toIndex int
-	toIndex = offset + limit
+	toIndex = input.Offset + input.Limit
 	if toIndex > len(dummyLargeList) {
 		toIndex = len(dummyLargeList)
 	}
-	for _, LargeData := range dummyLargeList[offset:toIndex] {
+	for _, LargeData := range dummyLargeList[input.Offset:toIndex] {
 		*result = append(*result, LargeData)
 	}
 	return nil
