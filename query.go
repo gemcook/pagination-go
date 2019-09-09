@@ -13,11 +13,19 @@ type Query struct {
 	Enabled bool
 }
 
+// Init initialize pagination query parameters.
+func (q *Query) Init() {
+	q.Limit = 10
+	q.Page = 1
+	q.Enabled = true
+}
+
 // ParseQuery parses URL query string to get limit, page and sort
 func ParseQuery(queryStr string) *Query {
 
 	// Set default values.
-	p := &Query{Limit: 30, Page: 1, Enabled: true}
+	p := &Query{}
+	p.Init()
 
 	u, err := url.Parse(queryStr)
 	if err != nil {
@@ -30,6 +38,7 @@ func ParseQuery(queryStr string) *Query {
 			p.Limit = limit
 		}
 	}
+
 	if pageStr := query.Get("page"); pageStr != "" {
 		if page, err := strconv.Atoi(pageStr); err == nil {
 			p.Page = page
@@ -50,13 +59,15 @@ func ParseQuery(queryStr string) *Query {
 func ParseMap(qs map[string]string) *Query {
 
 	// Set default values.
-	p := &Query{Limit: 30, Page: 1, Enabled: true}
+	p := &Query{}
+	p.Init()
 
 	if limitStr, ok := qs["limit"]; ok {
 		if limit, err := strconv.Atoi(limitStr); err == nil {
 			p.Limit = limit
 		}
 	}
+
 	if pageStr, ok := qs["page"]; ok {
 		if page, err := strconv.Atoi(pageStr); err == nil {
 			p.Page = page
