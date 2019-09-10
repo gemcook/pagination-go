@@ -16,9 +16,9 @@ func TestParseQuery(t *testing.T) {
 		args args
 		want *pagination.Query
 	}{
-		{"default", args{"https://example.com/fruits?price_range=0,100"}, &pagination.Query{Limit: 30, Page: 1, Sort: []*pagination.Order{}, Enabled: true}},
+		{"default", args{"https://example.com/fruits?price_range=0,100"}, &pagination.Query{Limit: 10, Page: 1, Sort: []*pagination.Order{}, Enabled: true}},
 		{"limit=10, page=5", args{"https://example.com/fruits?price_range=0,100&page=5&limit=10"}, &pagination.Query{Limit: 10, Page: 5, Sort: []*pagination.Order{}, Enabled: true}},
-		{"pagination disabled", args{"https://example.com/fruits?price_range=0,100&pagination=false"}, &pagination.Query{Limit: 30, Page: 1, Sort: []*pagination.Order{}, Enabled: false}},
+		{"pagination disabled", args{"https://example.com/fruits?price_range=0,100&pagination=false"}, &pagination.Query{Limit: 10, Page: 1, Sort: []*pagination.Order{}, Enabled: false}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -35,9 +35,9 @@ func TestParseMap(t *testing.T) {
 		qs   map[string]string
 		want *pagination.Query
 	}{
-		{"default", map[string]string{}, &pagination.Query{Limit: 30, Page: 1, Sort: []*pagination.Order{}, Enabled: true}},
+		{"default", map[string]string{}, &pagination.Query{Limit: 10, Page: 1, Sort: []*pagination.Order{}, Enabled: true}},
 		{"limit=10, page=2", map[string]string{"limit": "10", "page": "2"}, &pagination.Query{Limit: 10, Page: 2, Sort: []*pagination.Order{}, Enabled: true}},
-		{"pagination=false", map[string]string{"pagination": "false"}, &pagination.Query{Limit: 30, Page: 1, Sort: []*pagination.Order{}, Enabled: false}},
+		{"pagination=false", map[string]string{"pagination": "false"}, &pagination.Query{Limit: 10, Page: 1, Sort: []*pagination.Order{}, Enabled: false}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

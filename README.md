@@ -42,7 +42,7 @@ Those query parameters below will be parsed.
 
 | query parameter | Mapped field | required | expected value        | default value |
 | --------------- | ------------ | -------- | --------------------- | ------------- |
-| `limit`         | `Limit`      | no       | positive integer      | `30`          |
+| `limit`         | `Limit`      | no       | positive integer      | `10`          |
 | `page`          | `Page`       | no       | positive integer (1~) | `1`           |
 | `pagination`    | `Enabled`    | no       | boolean               | `true`        |
 
